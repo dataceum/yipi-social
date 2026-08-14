@@ -1,0 +1,41 @@
+# ==========================================
+# 🐍 Python & Build Dependencies
+# ==========================================
+# Ignores all bytecode caches anywhere in frontend or backend
+**/__pycache__/
+*.py[cod]
+*$py.class
+
+# Build and distribution directories
+**/build/
+**/dist/
+**/wheels/
+**/*.egg-info/
+
+# ==========================================
+# ⚙️ Environments & Secrets (CRITICAL)
+# ==========================================
+# Ignores local virtual environments
+**/.venv/
+**/venv/
+**/ENV/
+
+# Ignores environment variables anywhere in the repository tree
+**/.env
+**/*.env
+
+# ==========================================
+# 🎨 Frontend (Optional but Recommended)
+# ==========================================
+# Ignores heavy frontend package files if using Node/NPM
+**/node_modules/
+**/dist-frontend/
+
+# ==========================================
+# ⚡ uv Package Manager Files
+# ==========================================
+# Ignore uv's internal cache if it's created locally
+**/.uv/
+
+# Ignore uv's environment information directory if present
+**/.pdm-build/
