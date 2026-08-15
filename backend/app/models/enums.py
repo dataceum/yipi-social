@@ -28,13 +28,11 @@ class ProfileStatus(str, enum.Enum):
     APPROVED = "approved"
     REJECTED = "rejected"
     PENDING = "pending"
-    ACTIVE = "active"
     INACTIVE = "inactive"
     SUSPENDED = "suspended"
 
 
 class RejectionReason(str, enum.Enum):
-    APPROVED = "approved"
     INAPPROPRIATE_CONTENT = "inappropriate content"
     COPYRIGHT_VIOLATION = "copyright violation"
     CRIMINAL_ACTIVITY = "criminal activity"

@@ -9,15 +9,21 @@ from sqlmodel.ext.asyncio.session import AsyncSession
 
 from app.models.user import (
     User,
-    UserCreate,
+    CreateUser,
+    AdminCreateUser,
     UserLogin,
     UserResponse,
+    AdminUserResponse,
 )
 
 # Modle imports
-from app.models.profile import ProfileBase, Profile
+from app.models.profile import Profile
 from app.models.enums import UserRole
-from app.models.token import Token, TokenSetResponse, RefreshRequest
+from app.models.token import (
+    Token,
+    TokenSetResponse,
+    RefreshRequest,
+)
 
 # Utils imports
 from app.core.utils.age_category import (
@@ -42,32 +48,29 @@ auth_router = APIRouter(prefix="/auth", tags=["Authentication Layer"])
 ##################################################################################
 @auth_router.post(
     "/create_user",
-    response_model=UserResponse,
+    response_model=AdminUserResponse,
     status_code=status.HTTP_201_CREATED,
-    summary="Create a new user object without a complementary profile object. Only Admins allowd.",
+    summary="Create a new ADMIN or MODERATOR account. Admin only.",
 )
 async def create_user(
-    payload: UserCreate,
+    payload: AdminCreateUser,
     db: AsyncSession = Depends(get_async_session),
     current_user: User = Depends(get_current_user),
 ) -> User:
     """
-    Create a User object without provisioning a Profile container.
+    Create an elevated (ADMIN or MODERATOR) account with no Profile container.
+    Defaults to a MODERATOR account.
 
-    This endpoint is strictly restricted to administrative users. It creates other (elevated) users. It validates account parameter uniqueness across usernames and email addresses before
-    generating password hashes and committing records to the database.
-
-    Args:
-        payload: A validated incoming request schema containing registration metrics.
-        db: An active asynchronous database session instance provided by the dependency pool.
-        current_user: The authenticated administrative database User requesting execution.
-
-    Returns:
-        User: The fully instantiated database User model row containing generated primary key IDs and nested profile relationship maps.
+    Strictly restricted to administrators. Rejects role=USER — standard
+    accounts must go through /auth/signup so they always get a Profile.
 
     Raises:
-        HTTPException: 403 Forbidden if the calling user lacks an Admin role.
-        HTTPException: 409 Conflict if the requested username or email is already allocated within the persistence layer.
+        HTTPException: 403 if the caller isn't an ADMIN.
+        HTTPException: 400 if payload.role == USER.
+        HTTPException: 409 if username or email is already taken.
+
+    Returns:
+        User: Returns the created User object
     """
     if current_user.role != UserRole.ADMIN:
         raise HTTPException(
@@ -83,6 +86,7 @@ async def create_user(
     username_exists = (
         await db.exec(select(User).where(User.username == clean_username))
     ).one_or_none()
+
     if username_exists:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT, detail="Username is already taken."
@@ -91,17 +95,13 @@ async def create_user(
     email_exists = (
         await db.exec(select(User).where(User.email == clean_email))
     ).one_or_none()
+
     if email_exists:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT, detail="Email is already registered"
         )
 
-    assigned_role = (
-        UserRole(payload.role) if hasattr(payload, "role") else UserRole.USER
-    )
-
     encrypted_password = await hash_password(payload.password)
-    age_category = calculate_age_category(payload.birth_date)
 
     # Construct the Core User Model using SQLModel's model_validate wrapper.
     # This automatically leaves the 'id' field out to let the database auto-increment sequence manage it.
@@ -111,23 +111,15 @@ async def create_user(
             "username": clean_username,
             "email": clean_email,
             "hashed_password": encrypted_password,
-            "role": assigned_role,
+            "role": UserRole.MODERATOR,
+            # Elevated accounts have no profile-approval workflow to flip this,
+            # so they're active immediately. Flag if you want this to require
+            # a separate manual activation step instead.
+            "is_active": True,
         },
     )
     db.add(user)
-
-    # Flush the session to write the record to the database and securely generate the user
-    # id (user.id)
-    await db.flush()
-
-    # Instantiate the complimentary user profile container if only it's a "user" role
-    if user.role == UserRole.USER:
-        user_profile = Profile(user_id=user.id, age_category=age_category)
-        db.add(user_profile)
-
-    # Commit the entire atomic transaction to the database
     await db.commit()
-
     # Refresh the user data to fully populate database properties for the response
     await db.refresh(user)
 
@@ -147,7 +139,7 @@ async def create_user(
     summary="Create a new user object and a complementary profile object",
 )
 async def signup(
-    payload: UserCreate,
+    payload: CreateUser,
     db: AsyncSession = Depends(get_async_session),
 ) -> User:
     """
@@ -167,6 +159,9 @@ async def signup(
     Raises:
         HTTPException: 403 Forbidden if the calling user lacks an Admin role.
         HTTPException: 409 Conflict if the requested username or email is already allocated within the persistence layer.
+
+    Returns:
+        User: A User object
     """
 
     # Sanitize inputs
@@ -196,8 +191,9 @@ async def signup(
     # Automatically calculate age category bracket
     age_category = calculate_age_category(payload.birth_date)
 
-    #  Construct the Core User Model using SQLModel's model_validate wrapper.
-    # This automatically leaves the 'id' field out to let the database auto-increment sequence manage it.
+    # Construct the Core User Model. role is intentionally left untouched here —
+    # User.role already defaults to UserRole.USER, and CreateUser exposes no
+    # role field, so this endpoint can never mint an elevated account.
     user = User.model_validate(
         payload,
         update={
@@ -208,12 +204,16 @@ async def signup(
     )
     db.add(user)
 
-    # Flush the session to write the record to the database and securely generate the user
-    # id (user.id)
+    # Flush to generate user.id before the Profile FK needs it
     await db.flush()
 
-    # Instantiate the dependent user profile using the freshly crafted user id
-    user_profile = Profile(user_id=user.id, age_category=age_category)
+    # Every account created here is USER-role, so a Profile is always provisioned
+    user_profile = Profile(
+        user_id=user.id,
+        age_category=age_category,
+        bio_recording_url=payload.bio_recording_url,
+        profile_picture_url=payload.profile_picture_url,
+    )
     db.add(user_profile)
 
     # Commit the entire atomic transaction to the database
@@ -240,14 +240,11 @@ async def login(
 
     Args:
         request:
-
         payload:
-
-        db: Database connection functionality
+        db: An asynchronous database sessoin
 
     Returns:
-        TokenSetResponse:
-            The generated JWT object
+        TokenSetResponse: The generated JWT object
     """
     username = payload.username.strip().lower()
     statement = select(User).where(User.username == username)
