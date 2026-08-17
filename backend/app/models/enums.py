@@ -43,3 +43,55 @@ class PostStatus(str, enum.Enum):
     DRAFT = "draft"
     ARCHIVED = "archived"
     DELETED = "deleted"
+    SUSPENDED = "suspended"
+
+
+class MediaType(str, enum.Enum):
+    DOCUMENT = "document"
+    PHOTO = "photo"
+    AUDIO = "audio"
+    VIDEO = "video"
+
+
+class RoomType(str, enum.Enum):
+    """What kind of room this is. Drives which Room fields are meaningful —
+    session/stream fields apply to the two LIVE_* types; a CHAT room just
+    uses RoomMember (participants) + RoomMessage (the conversation)."""
+
+    LIVE_AUDIO = "live_audio"
+    LIVE_VIDEO = "live_video"
+    CHAT = "chat"
+
+
+class RoomStatus(str, enum.Enum):
+    """Session state for LIVE_AUDIO / LIVE_VIDEO rooms. Unused for CHAT."""
+
+    SCHEDULED = "scheduled"
+    LIVE = "live"
+    ENDED = "ended"
+
+
+class RoomRole(str, enum.Enum):
+    """Per-room role for a RoomMember. OWNER is set automatically for the
+    user who creates the room; MODERATOR/MEMBER are assignable afterward."""
+
+    OWNER = "owner"
+    MODERATOR = "moderator"
+    MEMBER = "member"
+
+
+class ReportReason(str, enum.Enum):
+    SPAM = "spam"
+    HARASSMENT = "harassment"
+    HATE_SPEECH = "hate speech"
+    INAPPROPRIATE_CONTENT = "inappropriate content"
+    COPYRIGHT_VIOLATION = "copyright violation"
+    MISINFORMATION = "misinformation"
+    OTHER = "other"
+
+
+class ReportStatus(str, enum.Enum):
+    PENDING = "pending"
+    UNDER_REVIEW = "under review"
+    RESOLVED = "resolved"
+    DISMISSED = "dismissed"

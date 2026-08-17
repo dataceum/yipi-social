@@ -28,6 +28,7 @@ from app.models.profile import (
     ProfileResponse,
 )
 from app.models.token import Token
+from app.models.post import Post
 
 """
 Force-convert phone numbers into E164 format for database storage
@@ -189,6 +190,15 @@ class User(UserBase, table=True):
             "uselist": True,
             "lazy": "selectin",
             "foreign_keys": "[Token.user_id]",
+        },
+    )
+
+    posts: list["Post"] = Relationship(
+        back_populates="author",
+        sa_relationship_kwargs={
+            "cascade": "all, delete-orphan",
+            "foreign_keys": "[Post.author_id]",
+            "lazy": "selectin",
         },
     )
 

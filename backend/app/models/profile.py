@@ -100,6 +100,7 @@ class Profile(ProfileBase, table=True):
 # OUTGOING RESPONSE PAYLOAD DATA TRANSFER OBJECTS (DTOs) #
 ##########################################################
 
+
 class ProfileResponse(ProfileBase):
     """
     Response DTO for profile updates by Admins
