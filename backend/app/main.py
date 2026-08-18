@@ -12,6 +12,8 @@ from app.core.config import settings
 from app.api.v1.api import api_router
 from app.api.v1.endpoints.docs import setup_secure_docs
 
+import app.init
+
 # Disable the default public endpoints by setting them to None
 app = FastAPI(
     title=settings.APP_TITLE,

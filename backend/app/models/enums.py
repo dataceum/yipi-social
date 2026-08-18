@@ -95,3 +95,27 @@ class ReportStatus(str, enum.Enum):
     UNDER_REVIEW = "under review"
     RESOLVED = "resolved"
     DISMISSED = "dismissed"
+
+
+class AgentRole(str, enum.Enum):
+    """Per-team role for an Agent. OWNER is set automatically for whichever
+    agent's creation caused the team to be created; only the OWNER can add
+    further agents to that team. Exactly one OWNER per team is enforced by
+    a partial unique index on Agent (see team.py)."""
+
+    OWNER = "owner"
+    MEMBER = "member"
+
+
+class CallDirection(str, enum.Enum):
+    INBOUND = "inbound"
+    OUTBOUND = "outbound"
+
+
+class CallStatus(str, enum.Enum):
+    RINGING = "ringing"
+    ANSWERED = "answered"
+    COMPLETED = "completed"
+    MISSED = "missed"
+    VOICEMAIL = "voicemail"
+    FAILED = "failed"
