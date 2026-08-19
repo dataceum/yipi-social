@@ -170,16 +170,6 @@ class CallListResponse(SQLModel):
     results: List[CallResponse]
 
 
-class CallLookupResponse(SQLModel):
-    """Response for the synchronous 3CX caller-lookup ("screen pop") call —
-    distinct from the webhook receiver, which logs call events after the
-    fact. This answers "who is calling", not "record this call"."""
-
-    matched: bool
-    user: Optional[CallCallerSummary] = None
-    recent_calls: List[CallResponse] = []
-
-
 class CallReportResponse(SQLModel):
     """Aggregate report backing 'calls received from a user' — summary
     stats plus the underlying paginated call list."""
@@ -188,3 +178,79 @@ class CallReportResponse(SQLModel):
     total_calls: int
     total_duration_seconds: int
     calls: CallListResponse
+
+
+##########################################################
+#   3CX CRM CONTRACT SCHEMAS (Scenario 1: Smart Lookup   #
+#   GET response + Scenario 2: Journaling POST body)     #
+##########################################################
+
+
+class SmartLookupMessage(SQLModel):
+    """
+    The inner payload 3CX reads via the variable paths defined in the XML:
+      message.contact_id → ContactID / EntityId (passed back to us in the
+                           journal POST as contact_id)
+      message.first_name → FName
+      message.last_name  → LName
+      message.url        → RelPath  (concatenated onto CRMBaseURL by 3CX
+                           to build the ContactUrl it opens in the browser)
+
+    For KNOWN callers: contact_id is the user's id (str), url is the
+    relative path to their profile page (e.g. "/crm/users/42").
+
+    For UNKNOWN callers: contact_id is the E.164 phone number (non-empty,
+    so the AllowEmpty="false" rule in the XML still fires the popup),
+    first_name/"last_name" are placeholder labels, and url is the relative
+    path to the new-user creation form pre-filled with the phone number
+    (e.g. "/crm/users/new?phone=%2B233201234567") — satisfying requirement
+    3: the agent's browser opens that form the moment the call connects.
+    """
+
+    contact_id: str
+    first_name: str
+    last_name: str
+    url: str
+
+
+class SmartLookupResponse(SQLModel):
+    """Wraps SmartLookupMessage in the {"message": {...}} envelope that 3CX
+    expects. The XML variable paths are all message.* so this envelope is
+    mandatory — a flat response is silently ignored."""
+
+    message: SmartLookupMessage
+
+
+class ThreeCXJournalPayload(SQLModel):
+    """
+    Maps the fields 3CX POSTs in Scenario 2 (ReportCall / Hangup).
+    Field names match the XML PostValues keys exactly; 'from' is a Python
+    reserved word so it's aliased.
+
+    Note on timestamps: 3CX sends CallStartTimeLocal / CallEndTimeLocal —
+    local server time, NOT UTC. Parse with your 3CX tenant's timezone
+    (see THREE_CX_TIMEZONE in settings) to store correctly as UTC.
+    """
+
+    model_config = {"populate_by_name": True}
+
+    id: str  # 3CX CallID → external_call_id
+    from_agent: str = Field(alias="from")  # [Agent] — ext or display name
+    to: str  # destination number
+    agent_ext: str  # extension → look up Agent
+    direction: str  # "Inbound" | "Outbound"
+    status: str  # "Answered" | "NoAnswer" | "Busy" | "Failed" | "Voicemail"
+    duration: str  # total seconds as string (e.g. "72")
+    type: str  # 3CX call type label
+    number: str  # raw caller number
+    contact_id: Optional[str] = None  # EntityId echoed back from lookup
+    recording_url: Optional[str] = None
+    start_time: str  # "yyyy-MM-dd HH:mm:ss" (local)
+    end_time: Optional[str] = None  # "yyyy-MM-dd HH:mm:ss" (local)
+
+
+class JournalAckResponse(SQLModel):
+    """Minimal acknowledgment returned to 3CX after a successful journal
+    POST. 3CX doesn't read the body, but a 2xx is required."""
+
+    message: str = "ok"

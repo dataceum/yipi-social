@@ -32,6 +32,7 @@ from app.models.room import Room, RoomMember, RoomMessage  # noqa: F401
 from app.models.report import Report  # noqa: F401
 from app.models.team import Team, Agent  # noqa: F401
 from app.models.call import Call  # noqa: F401
+from app.models.api_key import APIKey  # noqa: F401
 
 __all__ = [
     "User",
@@ -48,4 +49,5 @@ __all__ = [
     "Team",
     "Agent",
     "Call",
+    "APIKey",
 ]

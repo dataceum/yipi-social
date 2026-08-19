@@ -77,3 +77,8 @@ Using SQLModel’s Asynchronous Session, we execute the user setup pipelines. Wh
 ### Managing Enums
 Strategy 1: The Modern Auto-Pilot Approach (Recommended)You can use the Open Source companion package alembic-postgresql-enum. This package plugs directly into Alembic's autogenerate engine, enabling it to fully understand PostgreSQL ENUMs natively.It will automatically:Detect any new python enums and safely inject a conditional CREATE TYPE IF NOT EXISTS block.Detect when you add, remove, or rename options inside an existing Enum class and write the complex raw SQL migrations automatically.1. Install the extension package:bashpip install alembic-postgresql-enum
 Use code with caution.2. Register it inside your alembic/env.py configuration:Open your alembic/env.py file and simply import the package at the top:
+
+### API Key Generation
+1. POST /api/v1/api-keys  → get new token
+2. Update ApiToken in 3CX → 3CX switches to the new key immediately
+3. DELETE /api/v1/api-keys/{old_id} → old key stops working

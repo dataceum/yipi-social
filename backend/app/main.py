@@ -9,7 +9,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 # Import the settings instance from the config module to access the application configuration, such as database connection details, security settings, and CORS allowed origins. The settings instance is created using Pydantic's BaseSettings class, which reads configuration values from environment variables or a .env file.
 from app.core.config import settings
-from app.api.v1.api import api_router
+from app.api.v1.api import api_router, threecx_router
 from app.api.v1.endpoints.docs import setup_secure_docs
 
 import app.init
@@ -35,6 +35,7 @@ app.add_middleware(
 
 # Mount the unified API router to your application instance
 app.include_router(api_router)
+app.include_router(threecx_router)  # keeps /api/method/... path intact
 
 # Load your custom wrapper configurations
 setup_secure_docs(app)
