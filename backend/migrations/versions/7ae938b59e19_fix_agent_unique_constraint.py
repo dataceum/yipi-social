@@ -1,8 +1,8 @@
-"""feat: CRM  models and enpoints for 3CX integration
+"""fix: agent unique constraint
 
-Revision ID: 6237b5a73eab
-Revises: f2499a6fe586
-Create Date: 2026-08-18 09:25:10.630902
+Revision ID: 7ae938b59e19
+Revises: 9eb2dc5c5e13
+Create Date: 2026-08-19 18:23:04.455917
 
 """
 from typing import Sequence, Union
@@ -12,8 +12,8 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = '6237b5a73eab'
-down_revision: Union[str, Sequence[str], None] = 'f2499a6fe586'
+revision: str = '7ae938b59e19'
+down_revision: Union[str, Sequence[str], None] = '9eb2dc5c5e13'
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 

@@ -27,13 +27,13 @@ if TYPE_CHECKING:
     from app.models.user import User
 
 #########################################################
-#                   API KEY LAYER                        #
+#                   API KEY LAYER                       #
 #########################################################
 
 
 class APIKeyCreate(SQLModel):
     """
-    The caller supplies only a human-readable label and an optional expiry.
+    The caller supplies only a human-readable label and an optional expiry date.
     The key and secret are generated server-side — never client-supplied.
     """
 

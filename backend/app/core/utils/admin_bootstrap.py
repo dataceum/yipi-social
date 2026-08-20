@@ -10,6 +10,7 @@ from app.core.db import engine, async_session_maker
 from app.core.security import hash_password
 from app.models.enums import Gender, UserRole
 from app.models.user import User
+import app.init
 
 
 async def main():

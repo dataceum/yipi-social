@@ -124,7 +124,7 @@ class Agent(AgentBase, table=True):
             "uq_agent_team_owner",
             "team_id",
             unique=True,
-            postgresql_where=sa.text("role = 'owner'"),
+            postgresql_where=sa.text("role = 'OWNER'::agent_role_enum"),
         ),
     )
 

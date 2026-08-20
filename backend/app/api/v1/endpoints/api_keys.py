@@ -21,8 +21,9 @@ from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlmodel import select, func
 from sqlmodel.ext.asyncio.session import AsyncSession
 
+import hashlib # For hashing the raw secret
 from app.core.db import get_async_session
-from app.core.security import get_current_user, get_password_hash
+from app.core.security import get_current_user
 from app.models.user import User
 from app.models.enums import UserRole
 from app.models.team import Agent
@@ -104,7 +105,7 @@ async def create_api_key(
 
     api_key = APIKey(
         key=raw_key,
-        hashed_secret=get_password_hash(raw_secret),
+        hashed_secret=hashlib.sha256(raw_secret.encode('utf-8')).hexdigest(),
         name=payload.name,
         owner_id=current_user.id,
         expires_at=payload.expires_at,

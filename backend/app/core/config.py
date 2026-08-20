@@ -28,6 +28,8 @@ class Settings(BaseSettings):
     SECRET_KEY: str
     ALGORITHM: str = "HS256"
 
+    THREE_CX_TIMEZONE: str = "Africa/Accra"
+
     # CORS Allowed Origins
     CORS_ALLOWED_ORIGINS: List[str] = []
 

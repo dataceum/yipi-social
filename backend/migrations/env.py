@@ -19,6 +19,14 @@ sys.path.append(os.getcwd())
 from app.models.user import User
 from app.models.profile import Profile
 from app.models.token import Token  # Keeps Alembic tracking synchronized!
+from app.models.post import PostMedia, Post
+from app.models.comment import Comment
+from app.models.api_key import APIKey
+from app.models.call import Call
+from app.models.like import Like
+from app.models.report import Report
+from app.models.team import Team, Agent
+from app.models.room import Room, RoomMember, RoomMessage
 from app.core.config import settings
 
 # This is the standard Alembic Config object
