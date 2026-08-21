@@ -1,0 +1,482 @@
+/* =========================================================================
+   Design tokens
+   ========================================================================= */
+:root {
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-display: 'Fraunces', Georgia, serif;
+
+  --bg: #faf9f7;
+  --bg-elevated: #ffffff;
+  --bg-sunken: #f2f0ec;
+  --text: #1c1a17;
+  --text-muted: #6b6459;
+  --text-faint: #9a9284;
+  --border: #e7e3db;
+  --border-strong: #d8d2c5;
+
+  --accent: #ff5a4e;
+  --accent-ink: #ffffff;
+  --accent-soft: #fff0ee;
+  --violet: #6c5ce7;
+  --amber: #ffb648;
+  --success: #1f9d6f;
+  --danger: #e0453a;
+  --danger-soft: #fdecea;
+
+  --gradient-brand: linear-gradient(135deg, #ff5a4e 0%, #ff8a5b 45%, #6c5ce7 100%);
+  --gradient-soft: linear-gradient(160deg, #fff5f1 0%, #f4f1fd 100%);
+
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 22px;
+  --radius-pill: 999px;
+
+  --shadow-sm: 0 1px 2px rgba(28, 26, 23, 0.06);
+  --shadow-md: 0 8px 24px rgba(28, 26, 23, 0.08);
+  --shadow-lg: 0 20px 48px rgba(28, 26, 23, 0.14);
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 64px;
+
+  color-scheme: light;
+}
+
+/* =========================================================================
+   Reset
+   ========================================================================= */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-sans);
+  background: var(--bg);
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+h1,
+h2,
+h3,
+h4,
+p,
+figure {
+  margin: 0;
+}
+
+ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+input,
+textarea,
+select {
+  font-family: inherit;
+  font-size: inherit;
+  color: inherit;
+}
+
+/* =========================================================================
+   Utilities
+   ========================================================================= */
+.muted {
+  color: var(--text-muted);
+}
+
+.faint {
+  color: var(--text-faint);
+}
+
+.row {
+  display: flex;
+  align-items: center;
+}
+
+.stack {
+  display: flex;
+  flex-direction: column;
+}
+
+.gap-1 { gap: var(--space-1); }
+.gap-2 { gap: var(--space-2); }
+.gap-3 { gap: var(--space-3); }
+.gap-4 { gap: var(--space-4); }
+
+.spread {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+}
+
+/* =========================================================================
+   Buttons
+   ========================================================================= */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  border: 1px solid transparent;
+  border-radius: var(--radius-pill);
+  padding: 10px 20px;
+  font-size: 0.94rem;
+  font-weight: 600;
+  line-height: 1;
+  transition: transform 0.12s ease, box-shadow 0.12s ease, background 0.12s ease,
+    border-color 0.12s ease, opacity 0.12s ease;
+  white-space: nowrap;
+}
+
+.btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.btn:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.btn-primary {
+  background: var(--text);
+  color: #fff;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: #000;
+}
+
+.btn-brand {
+  background: var(--gradient-brand);
+  color: #fff;
+  box-shadow: 0 10px 24px rgba(255, 90, 78, 0.32);
+}
+
+.btn-brand:hover:not(:disabled) {
+  box-shadow: 0 14px 30px rgba(255, 90, 78, 0.4);
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--text);
+  border-color: var(--border-strong);
+}
+
+.btn-ghost:hover:not(:disabled) {
+  background: var(--bg-sunken);
+}
+
+.btn-subtle {
+  background: var(--bg-sunken);
+  color: var(--text);
+}
+
+.btn-subtle:hover:not(:disabled) {
+  background: var(--border);
+}
+
+.btn-danger {
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+
+.btn-danger:hover:not(:disabled) {
+  background: #fbdbd8;
+}
+
+.btn-sm {
+  padding: 6px 14px;
+  font-size: 0.82rem;
+}
+
+.btn-icon {
+  padding: 8px;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+}
+
+.btn-icon:hover {
+  background: var(--bg-sunken);
+  color: var(--text);
+}
+
+.btn-block {
+  width: 100%;
+}
+
+/* =========================================================================
+   Form fields
+   ========================================================================= */
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.field label {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.field input,
+.field textarea,
+.field select {
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 11px 14px;
+  background: var(--bg-elevated);
+  font-size: 0.95rem;
+  outline: none;
+  transition: border-color 0.12s ease, box-shadow 0.12s ease;
+}
+
+.field input:focus,
+.field textarea:focus,
+.field select:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+.field-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-3);
+}
+
+.field-error {
+  font-size: 0.8rem;
+  color: var(--danger);
+}
+
+.form-alert {
+  background: var(--danger-soft);
+  color: var(--danger);
+  border-radius: var(--radius-sm);
+  padding: var(--space-3) var(--space-4);
+  font-size: 0.88rem;
+  font-weight: 500;
+}
+
+/* =========================================================================
+   Cards / surfaces
+   ========================================================================= */
+.card {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+}
+
+/* =========================================================================
+   Avatar
+   ========================================================================= */
+.avatar {
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+  background: var(--gradient-brand);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-family: var(--font-display);
+  user-select: none;
+}
+
+.avatar-xs { width: 28px; height: 28px; font-size: 0.7rem; }
+.avatar-sm { width: 36px; height: 36px; font-size: 0.82rem; }
+.avatar-md { width: 44px; height: 44px; font-size: 0.95rem; }
+.avatar-lg { width: 72px; height: 72px; font-size: 1.5rem; }
+.avatar-xl { width: 112px; height: 112px; font-size: 2.1rem; }
+
+/* =========================================================================
+   Badge
+   ========================================================================= */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  border-radius: var(--radius-pill);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  background: var(--bg-sunken);
+  color: var(--text-muted);
+}
+
+.badge-live {
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+
+.badge-live::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--danger);
+  animation: pulse 1.6s ease-in-out infinite;
+}
+
+.badge-accent {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
+
+/* =========================================================================
+   Spinner / empty state
+   ========================================================================= */
+.spinner {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 2.5px solid var(--border);
+  border-top-color: var(--accent);
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.spinner-page {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-8) 0;
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: var(--space-2);
+  padding: var(--space-7) var(--space-4);
+  color: var(--text-muted);
+}
+
+.empty-state .icon {
+  font-size: 2rem;
+}
+
+.empty-state h3 {
+  color: var(--text);
+  font-size: 1.05rem;
+}
+
+/* =========================================================================
+   Modal
+   ========================================================================= */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(28, 26, 23, 0.45);
+  backdrop-filter: blur(2px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-4);
+  z-index: 100;
+}
+
+.modal {
+  background: var(--bg-elevated);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  width: 100%;
+  max-width: 440px;
+  padding: var(--space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.modal h3 {
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+}
+
+/* =========================================================================
+   Toast (lightweight inline banner used for async feedback)
+   ========================================================================= */
+.toast {
+  position: fixed;
+  bottom: var(--space-5);
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--text);
+  color: #fff;
+  padding: 12px 20px;
+  border-radius: var(--radius-pill);
+  font-size: 0.88rem;
+  font-weight: 500;
+  box-shadow: var(--shadow-lg);
+  z-index: 200;
+}
+
+/* =========================================================================
+   Responsive helpers
+   ========================================================================= */
+@media (max-width: 760px) {
+  .field-row {
+    grid-template-columns: 1fr;
+  }
+}

@@ -4,8 +4,9 @@
 ###########################################################################################
 
 from datetime import datetime, timezone
+from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, status, Query
-from sqlmodel import select, func
+from sqlmodel import select, func, SQLModel
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 from typing import Union
@@ -23,11 +24,84 @@ from app.models.user import (
     ModeratorUserSearchList,
 )
 from app.models.profile import Profile, ProfileUpdate
+from app.models.team import Agent
 from app.core.utils.age_category import calculate_age_category
 from app.models.enums import UserRole, ProfileStatus
 from app.core.security import get_current_user, hash_password
 
 users_router = APIRouter(prefix="/users", tags=["User Accounts"])
+
+
+##########################################################
+# RESPONSE PAYLOAD FOR THE CURRENT-USER IDENTITY CHECK   #
+##########################################################
+class MeResponse(SQLModel):
+    """
+    Composite "who am I" response for the frontend's post-login routing
+    decision (social network vs CRM module).
+
+    Deliberately NOT one of AdminUserResponse/ModeratorUserResponse/
+    UserResponse: those three vary by how much of ANOTHER account's PII
+    to expose depending on the viewer's role — a distinction that doesn't
+    apply to your own account, since you already know your own email and
+    phone number regardless of role.
+
+    is_agent / agent_team_id compose across the social and CRM domains at
+    the endpoint layer (a select on Agent), not by adding a relationship
+    to the User model itself — see team.py's module docstring for why
+    that separation is kept deliberately loose.
+    """
+
+    id: int
+    username: str
+    first_name: str
+    last_name: str
+    email: str
+    role: UserRole
+    is_active: bool
+    is_agent: bool
+    agent_team_id: Optional[int] = None
+
+
+#############################################
+#         GET CURRENT AUTHENTICATED USER    #
+#############################################
+@users_router.get(
+    "/me",
+    response_model=MeResponse,
+    summary="Get the current authenticated user, including CRM agent status",
+)
+async def get_me(
+    db: AsyncSession = Depends(get_async_session),
+    current_user: User = Depends(get_current_user),
+) -> MeResponse:
+    """Identity check for the frontend to call once, right after login, to
+    decide whether to route into the social network module or the CRM
+    module — see is_agent/agent_team_id.
+
+    Args:
+        db: An active asynchronous database session instance.
+        current_user: The authenticated database user making the request.
+
+    Returns:
+        MeResponse: The caller's own identity fields, plus whether they
+        hold an Agent record and (if so) which team it belongs to.
+    """
+    agent = (
+        await db.exec(select(Agent).where(Agent.user_id == current_user.id))
+    ).one_or_none()
+
+    return MeResponse(
+        id=current_user.id,
+        username=current_user.username,
+        first_name=current_user.first_name,
+        last_name=current_user.last_name,
+        email=current_user.email,
+        role=current_user.role,
+        is_active=current_user.is_active,
+        is_agent=agent is not None,
+        agent_team_id=agent.team_id if agent else None,
+    )
 
 
 #############################################

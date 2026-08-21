@@ -3,6 +3,7 @@ This script defines the authentication endpoint
 """
 
 import secrets
+from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, status, Request
 from sqlmodel import select
 from sqlmodel.ext.asyncio.session import AsyncSession
@@ -18,6 +19,7 @@ from app.models.user import (
 
 # Modle imports
 from app.models.profile import Profile
+from app.models.team import Agent
 from app.models.enums import UserRole
 from app.models.token import (
     Token,
@@ -41,6 +43,29 @@ from app.core.security import (
 from app.core.db import get_async_session
 
 auth_router = APIRouter(prefix="/auth", tags=["Authentication Layer"])
+
+
+##################################################################################
+#          Composite login response — carries CRM routing signal too            #
+##################################################################################
+class LoginResponse(TokenSetResponse):
+    """
+    Extends TokenSetResponse (access_token, refresh_token, token_type)
+    rather than duplicating its fields — the token pair genuinely belongs
+    to token.py, so this only adds what token.py has no business knowing:
+    is_agent/agent_team_id.
+
+
+        const { is_agent } = await login(...);
+        window.location = is_agent ? '/crm' : '/app';
+
+    is_agent/agent_team_id spare the frontend a second GET /users/me call
+    immediately after login — /users/me still exists for re-checking
+    status later in a session without forcing a re-login.
+    """
+
+    is_agent: bool
+    agent_team_id: Optional[int] = None
 
 
 ##################################################################################
@@ -229,14 +254,18 @@ async def signup(
 ##################################################################################
 #                          User Login API Endpiont                               #
 ##################################################################################
-@auth_router.post("/login", response_model=TokenSetResponse)
+@auth_router.post("/login", response_model=LoginResponse)
 async def login(
     request: Request,
     payload: UserLogin,
     db: AsyncSession = Depends(get_async_session),
-) -> TokenSetResponse:
+) -> LoginResponse:
     """
     Validate user credentials, update user session/token, and provision both the login JWT session and the database tracking session.
+
+    Also resolves whether the authenticating user holds a CRM Agent record,
+    so the frontend can route straight to the social network or CRM module
+    off this single response — see LoginResponse.
 
     Args:
         request:
@@ -244,7 +273,8 @@ async def login(
         db: An asynchronous database sessoin
 
     Returns:
-        TokenSetResponse: The generated JWT object
+        LoginResponse: The generated JWT/refresh token pair, plus CRM
+            agent status (is_agent, agent_team_id) for post-login routing.
     """
     username = payload.username.strip().lower()
     statement = select(User).where(User.username == username)
@@ -283,13 +313,16 @@ async def login(
     db.add(token)
     await db.commit()
 
-    # Return the unified session and database tokens back to the frontend
-    return TokenSetResponse.model_validate(
-        {
-            "access_token": access_token,
-            "refresh_token": secure_refresh_string,
-            "token_type": "bearer",
-        }
+    # Resolve CRM agent status for the frontend's post-login routing decision.
+    agent = (await db.exec(select(Agent).where(Agent.user_id == user.id))).one_or_none()
+
+    # Return the unified session tokens plus CRM routing signal to the frontend
+    return LoginResponse(
+        access_token=access_token,
+        refresh_token=secure_refresh_string,
+        token_type="bearer",
+        is_agent=agent is not None,
+        agent_team_id=agent.team_id if agent else None,
     )
 
 

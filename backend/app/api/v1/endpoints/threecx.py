@@ -41,6 +41,8 @@ from typing import Optional
 from urllib.parse import quote
 from zoneinfo import ZoneInfo
 
+import hashlib
+import secrets
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlmodel import select
@@ -141,7 +143,8 @@ async def _verify_3cx_token(
     if api_key.expires_at and api_key.expires_at < datetime.now(timezone.utc):
         raise _unauthorized
 
-    if not verify_password(raw_secret, api_key.hashed_secret):
+    candidate_hash = hashlib.sha256(raw_secret.encode("utf-8")).hexdigest()
+    if not secrets.compare_digest(candidate_hash, api_key.hashed_secret):
         raise _unauthorized
 
     # Stamp last_used_at — non-critical, so we don't rollback the whole

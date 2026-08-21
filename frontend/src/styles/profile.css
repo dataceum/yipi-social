@@ -1,0 +1,91 @@
+.profile-cover {
+  height: 140px;
+  border-radius: var(--radius-lg);
+  background: var(--gradient-brand);
+  position: relative;
+}
+
+.profile-header {
+  padding: 0 var(--space-2);
+}
+
+.profile-avatar-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-top: -48px;
+}
+
+.profile-avatar-row .avatar {
+  border: 4px solid var(--bg);
+}
+
+.profile-name {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  margin-top: var(--space-3);
+}
+
+.profile-handle {
+  color: var(--text-faint);
+  font-size: 0.92rem;
+}
+
+.profile-bio {
+  margin-top: var(--space-3);
+  font-size: 0.94rem;
+  line-height: 1.55;
+  color: var(--text);
+}
+
+.profile-meta-row {
+  display: flex;
+  gap: var(--space-5);
+  margin-top: var(--space-3);
+  font-size: 0.86rem;
+  color: var(--text-muted);
+}
+
+.profile-meta-row b {
+  color: var(--text);
+}
+
+.profile-badges {
+  display: flex;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+}
+
+.tabs {
+  display: flex;
+  border-bottom: 1px solid var(--border);
+}
+
+.tabs button {
+  background: none;
+  border: none;
+  padding: var(--space-3) var(--space-4);
+  font-weight: 700;
+  font-size: 0.92rem;
+  color: var(--text-faint);
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+}
+
+.tabs button.active {
+  color: var(--text);
+  border-color: var(--accent);
+}
+
+.settings-form {
+  padding: var(--space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.avatar-picker {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}

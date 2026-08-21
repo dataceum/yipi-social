@@ -1,0 +1,154 @@
+.room-filter-row {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.room-filter-row button {
+  border: 1px solid var(--border);
+  background: var(--bg-elevated);
+  padding: 7px 16px;
+  border-radius: var(--radius-pill);
+  font-weight: 600;
+  font-size: 0.86rem;
+  color: var(--text-muted);
+}
+
+.room-filter-row button.active {
+  background: var(--text);
+  color: #fff;
+  border-color: var(--text);
+}
+
+.room-card {
+  padding: var(--space-4);
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.room-card .room-thumb {
+  width: 56px;
+  height: 56px;
+  border-radius: var(--radius-md);
+  background: var(--gradient-brand);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 1.4rem;
+}
+
+.room-card .room-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.room-card .room-info h3 {
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.room-card .room-info p {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.room-detail-head {
+  padding: var(--space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.room-detail-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.room-detail-title-row h1 {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+}
+
+.room-members-strip {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.room-members-strip .stack-avatars {
+  display: flex;
+}
+
+.room-members-strip .stack-avatars .avatar {
+  border: 2px solid var(--bg-elevated);
+  margin-left: -10px;
+}
+
+.room-members-strip .stack-avatars .avatar:first-child {
+  margin-left: 0;
+}
+
+.room-messages {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-5);
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+.room-message {
+  display: flex;
+  gap: var(--space-3);
+  max-width: 80%;
+}
+
+.room-message.mine {
+  align-self: flex-end;
+  flex-direction: row-reverse;
+}
+
+.room-message .bubble {
+  background: var(--bg-sunken);
+  border-radius: var(--radius-md);
+  padding: 10px 14px;
+  font-size: 0.92rem;
+  line-height: 1.45;
+}
+
+.room-message.mine .bubble {
+  background: var(--text);
+  color: #fff;
+}
+
+.room-message .meta {
+  font-size: 0.7rem;
+  color: var(--text-faint);
+  margin-top: 3px;
+}
+
+.room-composer {
+  display: flex;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border-top: 1px solid var(--border);
+}
+
+.room-composer input {
+  flex: 1;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-pill);
+  padding: 10px 18px;
+  outline: none;
+}
+
+.room-composer input:focus {
+  border-color: var(--accent);
+}
