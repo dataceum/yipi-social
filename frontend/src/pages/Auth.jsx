@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../AuthContext'
+import { homeRouteFor } from '../utils'
 
 function AuthLayout({ quote, who, children }) {
   return (
@@ -39,8 +40,9 @@ export function Login() {
     setBusy(true)
     setError('')
     try {
-      await login(form.username.trim(), form.password)
-      navigate('/feed', { replace: true })
+      const { me } = await login(form.username.trim(), form.password)
+      // Admins/moderators land on the moderation queue, not the social feed.
+      navigate(homeRouteFor(me), { replace: true })
     } catch (err) {
       setError(err.detail || 'Could not log in. Check your username and password.')
     } finally {

@@ -19,7 +19,7 @@ export default function Search() {
     setLoading(true)
     const handle = setTimeout(async () => {
       try {
-        const res = await usersApi.search(q)
+        const res = await usersApi.search({ query: q })
         setResults(res.results)
       } finally {
         setLoading(false)

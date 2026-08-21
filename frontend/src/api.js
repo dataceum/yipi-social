@@ -101,8 +101,11 @@ export const authApi = {
 
 export const usersApi = {
   me: () => apiFetch('/users/me'),
-  search: (query, { page = 1, limit = 20 } = {}) =>
-    apiFetch('/users/search', { params: { query, page, limit } }),
+  // query is required for standard users; reviewers (admin/moderator) may
+  // instead/also pass profileStatus to list by Profile.status with no
+  // search term (the moderation approval queue) — see users.py get_users.
+  search: ({ query, profileStatus, page = 1, limit = 20 } = {}) =>
+    apiFetch('/users/search', { params: { query, profile_status: profileStatus, page, limit } }),
   get: (userId) => apiFetch(`/users/${userId}`),
   update: (userId, payload) => apiFetch(`/users/${userId}`, { method: 'PATCH', body: payload }),
 }
@@ -165,6 +168,10 @@ export const roomsApi = {
 export const reportsApi = {
   reportPost: (postId, payload) => apiFetch(`/reports/posts/${postId}`, { method: 'POST', body: payload }),
   reportRoom: (roomId, payload) => apiFetch(`/reports/rooms/${roomId}`, { method: 'POST', body: payload }),
+  // Admin/Moderator only — the moderation queue.
+  list: ({ status, page = 1, limit = 20 } = {}) => apiFetch('/reports', { params: { status, page, limit } }),
+  get: (reportId) => apiFetch(`/reports/${reportId}`),
+  update: (reportId, payload) => apiFetch(`/reports/${reportId}`, { method: 'PATCH', body: payload }),
 }
 
 export { ApiError as default }

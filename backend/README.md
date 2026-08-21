@@ -82,3 +82,8 @@ Use code with caution.2. Register it inside your alembic/env.py configuration:Op
 1. POST /api/v1/api-keys  → get new token
 2. Update ApiToken in 3CX → 3CX switches to the new key immediately
 3. DELETE /api/v1/api-keys/{old_id} → old key stops working
+
+
+### NOTES FOR DISCUSSION
+1. Should users' profiles be approved before they can engage in community activities? This will include uploading a profile picture and bio recording.
+2. Should users be able to self-join rooms without approval from the rooms' creators?

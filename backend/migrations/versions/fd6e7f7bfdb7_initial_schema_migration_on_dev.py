@@ -1,8 +1,8 @@
-"""initial schema migration
+"""initial schema migration on dev
 
-Revision ID: 9eb2dc5c5e13
+Revision ID: fd6e7f7bfdb7
 Revises: 
-Create Date: 2026-08-19 18:12:10.783330
+Create Date: 2026-08-21 13:42:14.588631
 
 """
 from typing import Sequence, Union
@@ -13,7 +13,7 @@ from sqlalchemy.dialects import postgresql
 import sqlmodel
 
 # revision identifiers, used by Alembic.
-revision: str = '9eb2dc5c5e13'
+revision: str = 'fd6e7f7bfdb7'
 down_revision: Union[str, Sequence[str], None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -30,6 +30,13 @@ def upgrade() -> None:
     sa.Enum('SPAM', 'HARASSMENT', 'HATE_SPEECH', 'INAPPROPRIATE_CONTENT', 'COPYRIGHT_VIOLATION', 'MISINFORMATION', 'OTHER', name='reportreason').create(op.get_bind())
     sa.Enum('RINGING', 'ANSWERED', 'COMPLETED', 'MISSED', 'VOICEMAIL', 'FAILED', name='callstatus').create(op.get_bind())
     sa.Enum('INBOUND', 'OUTBOUND', name='calldirection').create(op.get_bind())
+    sa.Enum('ADMIN', 'MODERATOR', 'USER', name='user_role_enum').create(op.get_bind())
+    sa.Enum('MALE', 'FEMALE', name='gender_enum').create(op.get_bind())
+    sa.Enum('PUBLISHED', 'DRAFT', 'ARCHIVED', 'DELETED', 'SUSPENDED', name='post_status_enum').create(op.get_bind())
+    sa.Enum('DOCUMENT', 'PHOTO', 'AUDIO', 'VIDEO', name='media_type_enum').create(op.get_bind())
+    sa.Enum('INAPPROPRIATE_CONTENT', 'COPYRIGHT_VIOLATION', 'CRIMINAL_ACTIVITY', name='rejection_reason_enum').create(op.get_bind())
+    sa.Enum('APPROVED', 'REJECTED', 'PENDING', 'INACTIVE', 'SUSPENDED', name='profile_status_enum').create(op.get_bind())
+    sa.Enum('EMERGING_ADULT', 'EARLY_ADULT', 'PRIME_ADULT', 'MID_ADULT', 'MATURE_ADULT', 'SENIOR', name='age_category_enum').create(op.get_bind())
     op.create_table('users',
     sa.Column('username', sqlmodel.sql.sqltypes.AutoString(length=20), nullable=False),
     sa.Column('first_name', sqlmodel.sql.sqltypes.AutoString(length=50), nullable=False),
@@ -350,6 +357,13 @@ def downgrade() -> None:
     op.drop_index(op.f('ix_users_phone_number'), table_name='users')
     op.drop_index(op.f('ix_users_email'), table_name='users')
     op.drop_table('users')
+    sa.Enum('EMERGING_ADULT', 'EARLY_ADULT', 'PRIME_ADULT', 'MID_ADULT', 'MATURE_ADULT', 'SENIOR', name='age_category_enum').drop(op.get_bind())
+    sa.Enum('APPROVED', 'REJECTED', 'PENDING', 'INACTIVE', 'SUSPENDED', name='profile_status_enum').drop(op.get_bind())
+    sa.Enum('INAPPROPRIATE_CONTENT', 'COPYRIGHT_VIOLATION', 'CRIMINAL_ACTIVITY', name='rejection_reason_enum').drop(op.get_bind())
+    sa.Enum('DOCUMENT', 'PHOTO', 'AUDIO', 'VIDEO', name='media_type_enum').drop(op.get_bind())
+    sa.Enum('PUBLISHED', 'DRAFT', 'ARCHIVED', 'DELETED', 'SUSPENDED', name='post_status_enum').drop(op.get_bind())
+    sa.Enum('MALE', 'FEMALE', name='gender_enum').drop(op.get_bind())
+    sa.Enum('ADMIN', 'MODERATOR', 'USER', name='user_role_enum').drop(op.get_bind())
     sa.Enum('INBOUND', 'OUTBOUND', name='calldirection').drop(op.get_bind())
     sa.Enum('RINGING', 'ANSWERED', 'COMPLETED', 'MISSED', 'VOICEMAIL', 'FAILED', name='callstatus').drop(op.get_bind())
     sa.Enum('SPAM', 'HARASSMENT', 'HATE_SPEECH', 'INAPPROPRIATE_CONTENT', 'COPYRIGHT_VIOLATION', 'MISINFORMATION', 'OTHER', name='reportreason').drop(op.get_bind())

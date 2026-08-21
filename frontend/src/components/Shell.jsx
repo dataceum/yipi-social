@@ -3,20 +3,28 @@ import { useState } from 'react'
 import { useAuth } from '../AuthContext'
 import { Avatar } from './ui'
 import { Icon } from '../icons'
-import { fullName } from '../utils'
+import { fullName, isReviewer } from '../utils'
 import ComposeModal from './ComposeModal'
 
-const NAV = [
+const SOCIAL_NAV = [
   { to: '/feed', label: 'Home', icon: Icon.Home },
   { to: '/search', label: 'Search', icon: Icon.Search },
   { to: '/rooms', label: 'Spaces', icon: Icon.Spaces },
   { to: '/settings', label: 'Settings', icon: Icon.Settings },
 ]
 
+const MODERATION_LINK = { to: '/moderation', label: 'Moderation', icon: Icon.Flag }
+
 export default function Shell() {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
   const [composing, setComposing] = useState(false)
+  const reviewer = isReviewer(user)
+  // Reviewers get Moderation pinned right after Home — it's their primary
+  // queue, not an afterthought buried past the social nav.
+  const NAV = reviewer
+    ? [SOCIAL_NAV[0], MODERATION_LINK, ...SOCIAL_NAV.slice(1)]
+    : SOCIAL_NAV
 
   async function handleLogout() {
     await logout()

@@ -40,3 +40,14 @@ export function formatCount(n) {
   if (n < 1_000_000) return `${(n / 1000).toFixed(n % 1000 >= 100 ? 1 : 0)}K`
   return `${(n / 1_000_000).toFixed(1)}M`
 }
+
+/** Mirrors the backend's own reviewer check (see `_is_reviewer` in
+ * posts.py/rooms.py/reports.py etc.) — admins and moderators both review
+ * reports, so both land on the moderation queue rather than the feed. */
+export function isReviewer(user) {
+  return user?.role === 'admin' || user?.role === 'moderator'
+}
+
+export function homeRouteFor(user) {
+  return isReviewer(user) ? '/moderation' : '/feed'
+}

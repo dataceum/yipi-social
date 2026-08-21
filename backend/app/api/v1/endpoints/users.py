@@ -110,13 +110,23 @@ async def get_me(
 @users_router.get(
     "/search",
     response_model=AdminUserSearchList | ModeratorUserSearchList | UserSearchList,
-    summary="Search active users by with approved profiles username, email or phone number",
+    summary="Search users by username/email/phone, or (reviewers only) list by profile status",
 )
 async def get_users(
-    query: str = Query(
-        ...,
+    query: str | None = Query(
+        None,
         min_length=3,
         description="Partial or incomplete username, email or phone number",
+    ),
+    profile_status: ProfileStatus | None = Query(
+        None,
+        description=(
+            "Filter by profile approval status (e.g. PENDING for the "
+            "moderation queue). Reviewers (Admin/Moderator) only — query "
+            "becomes optional when this is set, so the queue can be listed "
+            "without a search term. Ignored for standard users, who are "
+            "always constrained to APPROVED regardless of this parameter."
+        ),
     ),
     page: int = Query(1, ge=1, description="Page number"),
     limit: int = Query(
@@ -125,54 +135,76 @@ async def get_users(
     db: AsyncSession = Depends(get_async_session),
     current_user: User = Depends(get_current_user),
 ) -> AdminUserSearchList | ModeratorUserSearchList | UserSearchList:
-    """Search registered application users by their unique username handle.
+    """Search registered application users, or — for Admins/Moderators —
+    list them filtered by profile status (e.g. the PENDING-approval queue)
+    with no search term at all.
 
-    Executes a case-insensitive fuzzy pattern match across usernames, emails and phone numbers.
-    This lookup is hard-constrained to protect system metadata by entirely excluding
+    Executes a case-insensitive fuzzy pattern match across usernames, emails and phone numbers
+    when `query` is supplied. Standard users must always supply a query; this lookup is
+    hard-constrained for them to protect system metadata by entirely excluding
     administrative users from the returned visibility matrices.
 
     Args:
-        query: The partial or full string search query parameters.
+        query: The partial or full string search query parameters. Required for
+            standard users; optional for reviewers (who may instead/also filter
+            by profile_status).
+        profile_status: Reviewer-only filter on Profile.status.
         page: Pagination selector representing the targeted page frame index.
         limit: The batch size constraint mapping max rows to deliver per query execution.
         db: An active asynchronous database session instance.
         current_user: The authenticated database user initiating the search filter.
 
     Raises:
-            HTTPException: 403 Forbidden if a standard user attempts to look up a database identity
-            that does not match their own ID.
-            HTTPException: 404 Not Found if the requested user ID is absent from the database.
+            HTTPException: 400 Bad Request if a standard user omits the search query.
 
     Returns:
         AdminUserSearchList | ModeratorSearchList| UserSearchList: A dictionary payload envelope holding the light array
         of matched user summaries and a total count indicator.
     """
-    # Standardize the lookup query text payload parameters
-    search_query = f"%{query.strip().lower()}%"
+    is_reviewer = current_user.role in {UserRole.ADMIN, UserRole.MODERATOR}
+
+    if not is_reviewer and not query:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="A search query of at least 3 characters is required.",
+        )
+
     offset_delta = (page - 1) * limit
 
     """
     TODO: Filter results based on age_category
     """
-    base_search_filters = [
-        User.username.ilike(search_query)
-        | User.email.ilike(search_query)
-        | User.phone_number.ilike(search_query)
-    ]
-
-    is_reviewer = current_user.role in {UserRole.ADMIN, UserRole.MODERATOR}
+    base_search_filters = []
+    if query:
+        search_query = f"%{query.strip().lower()}%"
+        base_search_filters = [
+            User.username.ilike(search_query)
+            | User.email.ilike(search_query)
+            | User.phone_number.ilike(search_query)
+        ]
 
     if is_reviewer:
         # Admins and moderators see accounts across all profile statuses and
         # roles, for moderation purposes — no status/role/is_active restriction.
-        filters = base_search_filters
+        filters = list(base_search_filters)
+        if profile_status is not None:
+            filters.append(Profile.status == profile_status)
     else:
         filters = base_search_filters + [
             User.role == UserRole.USER,
             Profile.status == ProfileStatus.APPROVED,
         ]
 
-    total_count = (await db.exec(select(func.count(User.id)).where(*filters))).one()
+    # Both queries join Profile explicitly — filters can reference
+    # Profile.status, and count must mirror the same FROM clause as the
+    # results query or it silently cross-joins into a wildly wrong total.
+    total_count = (
+        await db.exec(
+            select(func.count(User.id))
+            .join(Profile, Profile.user_id == User.id)
+            .where(*filters)
+        )
+    ).one()
     users = (
         await db.exec(
             select(User)

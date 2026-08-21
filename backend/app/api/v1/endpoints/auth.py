@@ -225,6 +225,10 @@ async def signup(
             "username": clean_username,
             "email": clean_email,
             "hashed_password": encrypted_password,
+            # Standard accounts can log in immediately after signup. Note this
+            # is independent of Profile.status (still PENDING here) — that
+            # governs visibility to other users (search/get), not login.
+            "is_active": True,
         },
     )
     db.add(user)
